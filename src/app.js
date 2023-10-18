@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import joi from "joi";
 import { v4 as uuidV4 } from "uuid";
 import bcrypt from "bcrypt";
+import dayjs from "dayjs";
 dotenv.config();
 
 const PORT = 5888;
@@ -43,9 +44,7 @@ server.post("/sign-up", async (req, res) => {
     return res.status(422).send(errors);
   }
 
-  const checkUser = await db
-    .collection("registeredUsers")
-    .findOne({ email: user.email });
+  const checkUser = await db.collection("users").findOne({ email: user.email });
 
   if (checkUser) {
     return res.status(422).send("email already being used");
@@ -54,7 +53,7 @@ server.post("/sign-up", async (req, res) => {
   const hashedPassword = bcrypt.hashSync(user.password, 10);
 
   try {
-    await db.collection("registeredUsers").insertOne({
+    await db.collection("users").insertOne({
       name: user.name,
       email: user.email,
       password: hashedPassword,
@@ -85,7 +84,7 @@ server.post("/sign-in", async (req, res) => {
   }
 
   const checkUser = await db
-    .collection("registeredUsers")
+    .collection("users")
     .findOne({ email: userLogin.email });
 
   if (checkUser && bcrypt.compareSync(userLogin.password, checkUser.password)) {
@@ -101,6 +100,50 @@ server.post("/sign-in", async (req, res) => {
 
     return res.send(session.token);
   } else {
-    res.sendStatus(422).send("User not found or incorrect password");
+    res.status(422).send("User not found or incorrect password");
   }
 });
+
+server.post("/new-input", async (req, res) => {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+  console.log(token);
+  if (!token) return res.status(401).send("please make login");
+
+  const session = await db.collection("sessions").findOne({ token });
+
+  if (!session) return res.status(401).send("You are not authorized");
+
+  const registryData = req.body;
+  const registryDataSchema = joi.object({
+    income: joi.boolean().required(),
+    value: joi.number().required(),
+    description: joi.string().max(18).required(),
+  });
+
+  const validateData = registryDataSchema.validate(registryData, {
+    abortEarly: false,
+  });
+
+  if (validateData.error) {
+    const errors = validateData.error.details.map((detail) => detail.message);
+    return res.status(422).send(errors);
+  }
+
+  const currentDate = formatCurrentDate(Date.now());
+
+
+  await db.collection("financialRecords").insertOne({
+    income: registryData.income,
+    value: parseInt(registryData.value).toFixed(2),
+    description: registryData.description,
+    date: currentDate,
+  });
+
+  return res.status(200).send("Entry successfully registered!");
+});
+
+function formatCurrentDate(currentDate) {
+  const dateToday = dayjs(currentDate);
+  return dateToday.format("DD-MM");
+}
