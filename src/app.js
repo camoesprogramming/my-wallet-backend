@@ -107,12 +107,12 @@ server.post("/sign-in", async (req, res) => {
 server.post("/new-input", async (req, res) => {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
-  console.log(token);
+
   if (!token) return res.status(401).send("please make login");
 
-  const session = await db.collection("sessions").findOne({ token });
+  const checkUser = await db.collection("sessions").findOne({ token });
 
-  if (!session) return res.status(401).send("You are not authorized");
+  if (!checkUser) return res.status(403).send("You are not authorized");
 
   const registryData = req.body;
   const registryDataSchema = joi.object({
@@ -132,15 +132,29 @@ server.post("/new-input", async (req, res) => {
 
   const currentDate = formatCurrentDate(Date.now());
 
-
   await db.collection("financialRecords").insertOne({
     income: registryData.income,
     value: parseInt(registryData.value).toFixed(2),
     description: registryData.description,
     date: currentDate,
+    userId: checkUser.userId
   });
 
   return res.status(200).send("Entry successfully registered!");
+});
+
+server.get("/financial-records", async (req, res) => {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+
+  if(!token) return res.status(401).send("Please, make login!")
+
+  const checkUser = await db.collection("sessions").findOne({ token });
+
+  if(!checkUser) return res.status(422).send("You are not authorized")
+
+  const data = await db.collection("financialRecords").find({})
+
 });
 
 function formatCurrentDate(currentDate) {
