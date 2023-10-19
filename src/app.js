@@ -137,7 +137,7 @@ server.post("/new-input", async (req, res) => {
     value: parseInt(registryData.value).toFixed(2),
     description: registryData.description,
     date: currentDate,
-    userId: checkUser.userId
+    userId: checkUser.userId,
   });
 
   return res.status(200).send("Entry successfully registered!");
@@ -147,14 +147,24 @@ server.get("/financial-records", async (req, res) => {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
 
-  if(!token) return res.status(401).send("Please, make login!")
+  if (!token) return res.status(401).send("Please, make login!");
 
   const checkUser = await db.collection("sessions").findOne({ token });
 
-  if(!checkUser) return res.status(422).send("You are not authorized")
+  if (!checkUser) return res.status(422).send("You are not authorized");
 
-  const data = await db.collection("financialRecords").find({})
+  const data = await db
+    .collection("financialRecords")
+    .find({ userId: checkUser.userId })
+    .toArray();
 
+  if (data.length === 0) {
+    return res.status(404).send("Non existent financial records");
+  }
+
+  const sanitizedData = data.map(({ userId, _id, ...rest }) => rest);
+
+  return res.status(200).send(sanitizedData)
 });
 
 function formatCurrentDate(currentDate) {
