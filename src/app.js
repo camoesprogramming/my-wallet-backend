@@ -112,7 +112,7 @@ server.post("/new-input", async (req, res) => {
 
   const checkUser = await db.collection("sessions").findOne({ token });
 
-  if (!checkUser) return res.status(401).send("Authorization not found");
+  if (!checkUser) return res.status(401).send("Not Authorized");
 
   const registryData = req.body;
   const registryDataSchema = joi.object({
@@ -151,7 +151,7 @@ server.get("/financial-records", async (req, res) => {
 
   const checkUser = await db.collection("sessions").findOne({ token });
 
-  if (!checkUser) return res.status(401).send("Authorization not found");
+  if (!checkUser) return res.status(401).send("Not Authorized!");
 
   const data = await db
     .collection("financialRecords")
@@ -175,11 +175,13 @@ server.put("/financial-records/:id", async (req, res) => {
   if (!token) return res.status(400).send("Please make login");
 
   const checkUser = await db.collection("sessions").findOne({ token });
-  if (!checkUser) return res.status(401).send("Authorization not found");
+  if (!checkUser) return res.status(401).send("Not Authorized!");
 
-  const foundRegistry = await db.collection("financialRecords").findOne({ _id:new ObjectId(id) });
+  const foundRegistry = await db
+    .collection("financialRecords")
+    .findOne({ _id: new ObjectId(id) });
 
-  const checkUserRegistry = (checkUser.userId.equals(foundRegistry.userId));
+  const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
   if (!checkUserRegistry) return res.status(401).send(checkUserRegistry);
 
   const dataRegistrySchema = joi.object({
@@ -215,6 +217,39 @@ server.put("/financial-records/:id", async (req, res) => {
     res.send("Financial record updated");
   } catch (error) {
     return res.status(500).send(error.message);
+  }
+});
+
+server.delete("/financial-records/:id", async (req, res) => {
+  const { authorization } = req.headers;
+  const { id } = req.params;
+
+  const token = authorization?.replace("Bearer ", "");
+  if (!token) return res.status(400).send("Please make login!");
+
+  const checkUser = await db.collection("sessions").findOne({ token });
+  if (!checkUser) return res.status(401).send("Not Authorized!");
+
+  const foundRegistry = await db
+    .collection("financialRecords")
+    .findOne({ _id: new ObjectId(id) });
+
+  if (!foundRegistry)
+    return res.status(400).send("Financial Record not found!");
+
+  const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
+  if (!checkUserRegistry)
+    return res
+      .status(401)
+      .send("You are not authorized to delete this record!");
+
+  try {
+    await db
+      .collection("financialRecords")
+      .deleteOne({ _id: new ObjectId(id) });
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
   }
 });
 
