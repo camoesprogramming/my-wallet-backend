@@ -40,7 +40,6 @@ server.post("/sign-up", async (req, res) => {
 
   if (validation.error) {
     const errors = validation.error.details.map((detail) => detail.message);
-    console.log("entrei aqui");
     return res.status(422).send(errors);
   }
 
@@ -194,7 +193,7 @@ server.put("/financial-records/:id", async (req, res) => {
   });
 
   if (validateDataRegistry.error) {
-    const errors = validateDataRegistry.error.details(
+    const errors = validateDataRegistry.error.details.map(
       (detail) => detail.message
     );
     return res.status(422).send(errors);
