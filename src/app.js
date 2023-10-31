@@ -176,12 +176,16 @@ server.put("/financial-records/:id", async (req, res) => {
   const checkUser = await db.collection("sessions").findOne({ token });
   if (!checkUser) return res.status(401).send("Not Authorized!");
 
-  const foundRegistry = await db
-    .collection("financialRecords")
-    .findOne({ _id: new ObjectId(id) });
+  try {
+    const foundRegistry = await db
+      .collection("financialRecords")
+      .findOne({ _id: new ObjectId(id) });
 
-  const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
-  if (!checkUserRegistry) return res.status(401).send(checkUserRegistry);
+    const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
+    if (!checkUserRegistry) return res.status(401).send(checkUserRegistry);
+  } catch (error) {
+    console.error("Erro ao processar ID inválido, ", error);
+  }
 
   const dataRegistrySchema = joi.object({
     value: joi.number().required(),
