@@ -182,9 +182,11 @@ server.put("/financial-records/:id", async (req, res) => {
       .findOne({ _id: new ObjectId(id) });
 
     const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
-    if (!checkUserRegistry) return res.status(401).send(checkUserRegistry);
+    if (!checkUserRegistry) return res.status(401).send("You are not authorized to modify this registry");
   } catch (error) {
-    console.error("Erro ao processar ID inválido, ", error);
+    console.error("Invalid financial record ID, ", error);
+    return res.status(401).send("Invalid Financial Record ID")
+    
   }
 
   const dataRegistrySchema = joi.object({
