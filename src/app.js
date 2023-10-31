@@ -182,11 +182,13 @@ server.put("/financial-records/:id", async (req, res) => {
       .findOne({ _id: new ObjectId(id) });
 
     const checkUserRegistry = checkUser.userId.equals(foundRegistry.userId);
-    if (!checkUserRegistry) return res.status(401).send("You are not authorized to modify this registry");
+    if (!checkUserRegistry)
+      return res
+        .status(401)
+        .send("You are not authorized to modify this registry");
   } catch (error) {
     console.error("Invalid financial record ID, ", error);
-    return res.status(401).send("Invalid Financial Record ID")
-    
+    return res.status(401).send("Invalid Financial Record ID");
   }
 
   const dataRegistrySchema = joi.object({
@@ -255,6 +257,21 @@ server.delete("/financial-records/:id", async (req, res) => {
     res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error);
+  }
+});
+
+server.delete("/logout", async (req, res) => {
+  const { authorization } = req.headers;
+  
+  const token = authorization?.replace("Bearer ", "")
+  if(!token) return res.status(400).send("Please, make login!")
+
+  try {
+     db.collection("sessions").deleteOne({token})
+    return res.sendStatus(200)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).send(error)
   }
 });
 
