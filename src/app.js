@@ -163,7 +163,13 @@ server.get("/financial-records", async (req, res) => {
   if (data.length === 0) {
     return res.status(404).send("Non existent financial records");
   }
-  const sanitizedData = data.map(({ userId, ...rest }) => rest);
+  
+  const sanitizedData = data.forEach(d => {
+    d.id = d._id;
+    delete d.userId;
+    delete d._id
+  })
+  
 
   return res.status(200).send(sanitizedData);
 });
