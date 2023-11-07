@@ -91,13 +91,16 @@ server.post("/sign-in", async (req, res) => {
     const session = {
       token,
       userId: checkUser._id,
+      name: checkUser.name,
     };
 
     await db.collection("sessions").deleteOne({ userId: checkUser._id });
 
     await db.collection("sessions").insertOne(session);
 
-    return res.send(session.token);
+    const userData = {token: session.token,name: session.name}
+
+    return res.send(userData);
   } else {
     res.status(422).send("User not found or incorrect password");
   }
@@ -262,16 +265,16 @@ server.delete("/financial-records/:id", async (req, res) => {
 
 server.delete("/logout", async (req, res) => {
   const { authorization } = req.headers;
-  
-  const token = authorization?.replace("Bearer ", "")
-  if(!token) return res.status(400).send("Please, make login!")
+
+  const token = authorization?.replace("Bearer ", "");
+  if (!token) return res.status(400).send("Please, make login!");
 
   try {
-     db.collection("sessions").deleteOne({token})
-    return res.sendStatus(200)
+    db.collection("sessions").deleteOne({ token });
+    return res.sendStatus(200);
   } catch (error) {
-    console.error(error)
-    return res.status(500).send(error)
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 
