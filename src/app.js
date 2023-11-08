@@ -157,20 +157,22 @@ server.get("/financial-records", async (req, res) => {
 
   const data = await db
     .collection("financialRecords")
-    .find({ userId: checkUser.userId })
+    .find({ userId: new ObjectId (checkUser.userId) })
     .toArray();
+    
 
   if (data.length === 0) {
     return res.status(404).send("Non existent financial records");
   }
   
-  const sanitizedData = data.forEach(d => {
-    d.id = d._id;
-    delete d.userId;
-    delete d._id
-  })
+  const sanitizedData = data.map(d => {
+    const sanitizedD = { ...d }; 
+    sanitizedD.id = sanitizedD._id;
+    delete sanitizedD.userId;
+    delete sanitizedD._id;
+    return sanitizedD;
+  });
   
-
   return res.status(200).send(sanitizedData);
 });
 
