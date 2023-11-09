@@ -79,7 +79,7 @@ server.post("/sign-in", async (req, res) => {
     const errors = validateLoginAtempt.error.details.map(
       (detail) => detail.message
     );
-    return res.sendStatus(422).send(errors);
+    return res.status(422).send(errors);
   }
 
   const checkUser = await db
