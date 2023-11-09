@@ -98,7 +98,7 @@ server.post("/sign-in", async (req, res) => {
 
     await db.collection("sessions").insertOne(session);
 
-    const userData = {token: session.token,name: session.name}
+    const userData = { token: session.token, name: session.name };
 
     return res.send(userData);
   } else {
@@ -136,7 +136,7 @@ server.post("/new-input", async (req, res) => {
 
   await db.collection("financialRecords").insertOne({
     income: registryData.income,
-    value: parseInt(registryData.value).toFixed(2),
+    value: parseFloat(registryData.value).toFixed(2),
     description: registryData.description,
     date: currentDate,
     userId: checkUser.userId,
@@ -157,22 +157,21 @@ server.get("/financial-records", async (req, res) => {
 
   const data = await db
     .collection("financialRecords")
-    .find({ userId: new ObjectId (checkUser.userId) })
+    .find({ userId: new ObjectId(checkUser.userId) })
     .toArray();
-    
 
   if (data.length === 0) {
     return res.status(404).send("Non existent financial records");
   }
-  
-  const sanitizedData = data.map(d => {
-    const sanitizedD = { ...d }; 
+
+  const sanitizedData = data.map((d) => {
+    const sanitizedD = { ...d };
     sanitizedD.id = sanitizedD._id;
     delete sanitizedD.userId;
     delete sanitizedD._id;
     return sanitizedD;
   });
-  
+
   return res.status(200).send(sanitizedData);
 });
 
