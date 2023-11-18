@@ -6,6 +6,7 @@ import joi from "joi";
 import { v4 as uuidV4 } from "uuid";
 import bcrypt from "bcrypt";
 import dayjs from "dayjs";
+import db from "../config/database.js";
 dotenv.config();
 
 const PORT = 5888;
@@ -15,16 +16,7 @@ server.use(express.json());
 
 server.listen(PORT, () => console.log("estou rodando na porta", PORT));
 
-const mongoClient = new MongoClient(process.env.DATABASE_URL);
 
-let db;
-
-try {
-  await mongoClient.connect();
-} catch (error) {
-  console.log(error);
-}
-db = mongoClient.db();
 
 server.post("/sign-up", async (req, res) => {
   const user = req.body;
@@ -46,7 +38,7 @@ server.post("/sign-up", async (req, res) => {
   const checkUser = await db.collection("users").findOne({ email: user.email });
 
   if (checkUser) {
-    return res.status(422).send("email already being used");
+    return res.status(409).send("email already being used");
   }
 
   const hashedPassword = bcrypt.hashSync(user.password, 10);
