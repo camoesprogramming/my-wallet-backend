@@ -3,7 +3,7 @@ import { v4 as uuidV4 } from "uuid";
 import db from "../config/database.js";
 import joi from "joi";
 
-export async function SignUp(req, res) {
+export async function signUp(req, res) {
   const user = req.body;
 
   const userSchema = joi.object({
@@ -40,7 +40,7 @@ export async function SignUp(req, res) {
   }
 }
 
-export async function SignIn(req, res) {
+export async function signIn(req, res) {
     const userLogin = req.body;
 
   const userLoginSchema = joi.object({

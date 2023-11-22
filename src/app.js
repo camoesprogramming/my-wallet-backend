@@ -7,55 +7,21 @@ import bcrypt from "bcrypt";
 import dayjs from "dayjs";
 import db from "../config/database.js";
 import AuthRouter from "../routes/AuthRoutes.js";
+import NewInputRouter from "../routes/NewInputRoutes.js";
 
 
 const PORT = 5888;
 const server = express();
 server.use(cors());
 server.use(express.json());
-server.use(AuthRouter)
+server.use([AuthRouter, NewInputRouter])
 
 server.listen(PORT, () => console.log("estou rodando na porta", PORT));
 
 
 
 server.post("/new-input", async (req, res) => {
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
-
-  if (!token) return res.status(400).send("please make login");
-
-  const checkUser = await db.collection("sessions").findOne({ token });
-
-  if (!checkUser) return res.status(401).send("Not Authorized");
-
-  const registryData = req.body;
-  const registryDataSchema = joi.object({
-    income: joi.boolean().required(),
-    value: joi.number().required(),
-    description: joi.string().max(18).required(),
-  });
-
-  const validateData = registryDataSchema.validate(registryData, {
-    abortEarly: false,
-  });
-
-  if (validateData.error) {
-    const errors = validateData.error.details.map((detail) => detail.message);
-    return res.status(422).send(errors);
-  }
-
-  const currentDate = formatCurrentDate(Date.now());
-
-  await db.collection("financialRecords").insertOne({
-    income: registryData.income,
-    value: parseFloat(registryData.value).toFixed(2),
-    description: registryData.description,
-    date: currentDate,
-    userId: checkUser.userId,
-  });
-
-  return res.status(200).send("Entry successfully registered!");
+  
 });
 
 server.get("/financial-records", async (req, res) => {
