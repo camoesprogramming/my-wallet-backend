@@ -1,6 +1,6 @@
 import db from "../config/database.js";
-import joi from "joi";
 import { ObjectId } from "mongodb";
+import { dataRegistrySchema } from "../schemas/FinancialRecordSchema.js";
 
 export async function financialRecords(req, res) {
   const { authorization } = req.headers;
@@ -57,11 +57,6 @@ export async function financialRecordsId(req, res) {
     console.error("Invalid financial record ID, ", error);
     return res.status(401).send("Invalid Financial Record ID");
   }
-
-  const dataRegistrySchema = joi.object({
-    value: joi.number().required(),
-    description: joi.string().required(),
-  });
 
   const validateDataRegistry = dataRegistrySchema.validate(dataRegistry, {
     abortEarly: false,

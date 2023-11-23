@@ -1,5 +1,5 @@
 import db from "../config/database.js";
-import joi from "joi";
+import { registryDataSchema } from "../schemas/NewInputSchema.js";
 import dayjs from "dayjs";
 
 export async function newInput(req, res) {
@@ -13,11 +13,6 @@ export async function newInput(req, res) {
   if (!checkUser) return res.status(401).send("Not Authorized");
 
   const registryData = req.body;
-  const registryDataSchema = joi.object({
-    income: joi.boolean().required(),
-    value: joi.number().required(),
-    description: joi.string().max(18).required(),
-  });
 
   const validateData = registryDataSchema.validate(registryData, {
     abortEarly: false,

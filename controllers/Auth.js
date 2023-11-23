@@ -1,17 +1,10 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidV4 } from "uuid";
 import db from "../config/database.js";
-import joi from "joi";
+import { userLoginSchema, userSchema } from "../schemas/AuthSchema.js";
 
 export async function signUp(req, res) {
   const user = req.body;
-
-  const userSchema = joi.object({
-    name: joi.string().min(3).max(40).required(),
-    email: joi.string().email().required(),
-    password: joi.string().required(),
-    repeatPassword: joi.string().valid(joi.ref("password")).required(),
-  });
 
   const validation = userSchema.validate(user, { abortEarly: false });
 
@@ -41,12 +34,7 @@ export async function signUp(req, res) {
 }
 
 export async function signIn(req, res) {
-    const userLogin = req.body;
-
-  const userLoginSchema = joi.object({
-    email: joi.string().email().required(),
-    password: joi.string().required(),
-  });
+  const userLogin = req.body;
 
   const validateLoginAtempt = userLoginSchema.validate(userLogin, {
     abortEarly: false,

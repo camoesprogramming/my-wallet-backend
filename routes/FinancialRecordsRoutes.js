@@ -2,7 +2,7 @@ import {
   financialRecords,
   financialRecordsId,
   delFinancialRecordsId,
-} from "../controller/FinancialRecords.js";
+} from "../controllers/FinancialRecords.js";
 import { Router } from "express";
 
 const FinancialRecordsRouter = Router();

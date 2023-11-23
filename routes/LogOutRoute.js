@@ -1,4 +1,4 @@
-import { logout } from "../controller/Logout.js";
+import { logout } from "../controllers/Logout.js";
 import { Router } from "express";
 
 const LogoutRouter = Router();

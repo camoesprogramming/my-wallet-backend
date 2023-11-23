@@ -1,4 +1,4 @@
-import { newInput } from "../controller/NewInput.js";
+import { newInput } from "../controllers/NewInput.js";
 import { Router } from "express";
 
 const NewInputRouter = Router();
